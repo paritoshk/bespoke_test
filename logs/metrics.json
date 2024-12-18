@@ -1,14 +1,6 @@
 {
   "train_loss": [],
-  "eval_metrics": {
-    "accuracy": 1.0,
-    "avg_confidence": 0.9920932298898697,
-    "num_test_samples": 200,
-    "class_distribution": {
-      "positive": 100,
-      "negative": 100
-    }
-  },
+  "eval_metrics": {},
   "model_params": {
     "lr": 0.5,
     "epoch": 25,

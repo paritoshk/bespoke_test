@@ -3,7 +3,7 @@ import os
 from typing import List, Tuple
 import uuid
 import fasttext
-import types
+import random
 import tempfile
 import sys
 from io import StringIO
@@ -49,11 +49,16 @@ class FastTextService:
         self.models_dir = "trained_models"
         self.logger = ModelLogger()  # Initialize logger
         os.makedirs(self.models_dir, exist_ok=True)
-
-    async def train_model(self) -> str:
-        """Train a FastText classifier using data from positive/negative examples"""
+    async def train_model(self, positive_documents: List[str] = None) -> str:
+        """
+        Train a FastText classifier using either provided positive documents or local data.
+        
+        Args:
+            positive_documents: Optional list of positive documents. If None, uses local data.
+        Returns:
+            str: UUID of trained model
+        """
         try:
-            # Log training start
             model_params = {
                 'lr': 0.5,
                 'epoch': 25,
@@ -62,24 +67,50 @@ class FastTextService:
                 'loss': 'softmax'
             }
             self.logger.log_training_start(model_params)
-
             train_data = []
             
-            # Load and log data loading
-            positive_dir = "data/train/positive"
-            self.logger.logger.info(f"Loading positive examples from {positive_dir}")
-            for filename in os.listdir(positive_dir):
-                with open(os.path.join(positive_dir, filename), 'r') as f:
-                    text = clean_text(f.read())
+            # Explicitly check for None or empty list
+            use_local_data = positive_documents is None or len(positive_documents) == 0
+            self.logger.logger.info(f"Using {'local' if use_local_data else 'provided'} data")
+
+            if use_local_data:
+                # Load from local directory
+                positive_dir = "data/train/positive"
+                self.logger.logger.info(f"Loading positive examples from {positive_dir}")
+                for filename in os.listdir(positive_dir):
+                    with open(os.path.join(positive_dir, filename), 'r') as f:
+                        text = clean_text(f.read())
+                        train_data.append(f"__label__positive {text}")
+            else:
+                # Use provided positive documents
+                self.logger.logger.info(f"Using {len(positive_documents)} provided positive examples")
+                for doc in positive_documents:
+                    text = clean_text(doc)
                     train_data.append(f"__label__positive {text}")
+
+            # Get count of positive examples
+            num_positive = len(train_data)
+            self.logger.logger.info(f"Collected {num_positive} positive examples")
             
+            if num_positive < 20000:
+                raise ValueError(f"Insufficient positive examples. Found {num_positive}, need at least 20000")
+                
+            # Load negative examples
             negative_dir = "data/train/negative"
             self.logger.logger.info(f"Loading negative examples from {negative_dir}")
+            negative_examples = []
             for filename in os.listdir(negative_dir):
                 with open(os.path.join(negative_dir, filename), 'r') as f:
                     text = clean_text(f.read())
-                    train_data.append(f"__label__negative {text}")
+                    negative_examples.append(text)
+            
+            # Sample equal number of negative examples
+            sampled_negatives = random.sample(negative_examples, num_positive)
+            for text in sampled_negatives:
+                train_data.append(f"__label__negative {text}")
 
+            # Shuffle training data
+            random.shuffle(train_data)
             self.logger.logger.info(f"Total training examples: {len(train_data)}")
 
             # Create temporary training file
@@ -89,10 +120,11 @@ class FastTextService:
                 training_file = f.name
 
             try:
-                  # Capture stdout to parse progress
+                # Capture stdout to parse progress
                 old_stdout = sys.stdout
                 sys.stdout = mystdout = StringIO()
-                # Train model and log progress
+                
+                # Train model
                 self.logger.logger.info("Starting model training...")
                 model = fasttext.train_supervised(
                     input=training_file,
@@ -101,26 +133,24 @@ class FastTextService:
                     wordNgrams=model_params['wordNgrams'],
                     minCount=model_params['minCount'],
                     loss=model_params['loss'],
-                    verbose=2,  # Enable verbose output # Add callback
+                    verbose=2
                 )
-                                # Restore stdout and parse output
+
+                # Restore stdout and parse output
                 sys.stdout = old_stdout
                 output = mystdout.getvalue()
                 for line in output.split('\n'):
                     self.logger.parse_fasttext_progress(line)
 
-
-                # Generate UUID and save model
+                # Save model
                 model_id = str(uuid.uuid4())
                 model_path = os.path.join(self.models_dir, f"{model_id}.bin")
                 model.save_model(model_path)
                 self.models[model_id] = model
 
-                # Log evaluation metrics
+                # Evaluate and log
                 eval_metrics = self._evaluate_model(model)
                 self.logger.log_evaluation(eval_metrics)
-                
-                # Save training curves and metrics
                 self.logger.plot_training_curves()
                 self.logger.save_metrics()
                 
