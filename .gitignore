@@ -1,0 +1,13 @@
+venv/*
+venv/
+robotstxt.paths.gz
+app/.DS_Store
+.pytest_cache
+app/__pycache__
+tests/__pycache__/__init__.cpython-312.pyc
+tests/__pycache__/conftest.cpython-312-pytest-8.3.4.pyc
+tests/__pycache__/test_api.cpython-312-pytest-8.3.4.pyc
+tests/__pycache__/test_fasttext_service.cpython-312-pytest-8.3.4.pyc
+tests/__pycache__/test_models.cpython-312-pytest-8.3.4.pyc
+trained_models/*
+data/*
