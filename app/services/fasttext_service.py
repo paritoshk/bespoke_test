@@ -5,7 +5,11 @@ import uuid
 import fasttext
 import types
 import tempfile
-from utils.logger import ModelLogger  # Import our logger
+from ..utils.logger import ModelLogger  # Import our logger
+
+def clean_text(text: str) -> str:
+    """Clean text by removing extra whitespace and newlines"""
+    return ' '.join(text.strip().split())
 
 # Patch FastText to fix numpy issue
 def _patched_predict(self, text, k=1, threshold=0.0, on_unicode_error='strict'):
@@ -59,14 +63,14 @@ class FastTextService:
             self.logger.logger.info(f"Loading positive examples from {positive_dir}")
             for filename in os.listdir(positive_dir):
                 with open(os.path.join(positive_dir, filename), 'r') as f:
-                    text = f.read().strip()
+                    text = clean_text(f.read())
                     train_data.append(f"__label__positive {text}")
             
             negative_dir = "data/train/negative"
             self.logger.logger.info(f"Loading negative examples from {negative_dir}")
             for filename in os.listdir(negative_dir):
                 with open(os.path.join(negative_dir, filename), 'r') as f:
-                    text = f.read().strip()
+                    text = clean_text(f.read())
                     train_data.append(f"__label__negative {text}")
 
             self.logger.logger.info(f"Total training examples: {len(train_data)}")
@@ -146,7 +150,8 @@ class FastTextService:
             probabilities = []
             
             for doc in test_docs:
-                labels, probs = model.predict(doc)
+                cleaned_doc = clean_text(doc)
+                labels, probs = model.predict(cleaned_doc)
                 predictions.append(labels[0])
                 probabilities.append(float(probs[0]))
             
@@ -184,6 +189,7 @@ class FastTextService:
             for doc in documents:
                 # Clean the document text
                 doc = ' '.join(doc.split())  # normalize whitespace
+                doc += "\n"  # Add required newline for FastText
                 labels, probs = model.predict(doc)
                 # Get probability for positive class
                 score = float(probs[0]) if labels[0] == '__label__positive' else (1.0 - float(probs[0]))

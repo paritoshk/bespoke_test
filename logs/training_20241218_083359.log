@@ -1,0 +1,11 @@
+2024-12-18 08:36:03,178 - FastTextService - INFO - Training started with parameters: {
+  "lr": 0.5,
+  "epoch": 25,
+  "wordNgrams": 2,
+  "minCount": 1,
+  "loss": "softmax"
+}
+2024-12-18 08:36:03,178 - FastTextService - INFO - Loading positive examples from data/train/positive
+2024-12-18 08:36:06,794 - FastTextService - INFO - Loading negative examples from data/train/negative
+2024-12-18 08:36:10,407 - FastTextService - INFO - Total training examples: 40000
+2024-12-18 08:36:10,592 - FastTextService - INFO - Starting model training...

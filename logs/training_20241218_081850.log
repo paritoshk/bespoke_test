@@ -1,0 +1,28 @@
+2024-12-18 08:18:50,530 - FastTextService - INFO - Training started with parameters: {
+  "lr": 0.5,
+  "epoch": 25,
+  "wordNgrams": 2,
+  "minCount": 1,
+  "loss": "softmax"
+}
+2024-12-18 08:18:50,530 - FastTextService - INFO - Loading positive examples from data/train/positive
+2024-12-18 08:18:53,575 - FastTextService - INFO - Loading negative examples from data/train/negative
+2024-12-18 08:18:56,785 - FastTextService - INFO - Total training examples: 40000
+2024-12-18 08:18:57,014 - FastTextService - INFO - Starting model training...
+2024-12-18 08:19:20,634 - FastTextService - INFO - Evaluating on 100 samples from each class
+2024-12-18 08:19:20,686 - FastTextService - ERROR - Evaluation failed: predict processes one line at a time (remove '\n')
+2024-12-18 08:19:20,688 - FastTextService - ERROR - Training failed: predict processes one line at a time (remove '\n')
+2024-12-18 08:21:59,012 - FastTextService - INFO - Training started with parameters: {
+  "lr": 0.5,
+  "epoch": 25,
+  "wordNgrams": 2,
+  "minCount": 1,
+  "loss": "softmax"
+}
+2024-12-18 08:21:59,013 - FastTextService - INFO - Loading positive examples from data/train/positive
+2024-12-18 08:22:01,879 - FastTextService - INFO - Loading negative examples from data/train/negative
+2024-12-18 08:22:05,619 - FastTextService - INFO - Total training examples: 40000
+2024-12-18 08:22:05,805 - FastTextService - INFO - Starting model training...
+2024-12-18 08:22:30,772 - FastTextService - INFO - Evaluating on 100 samples from each class
+2024-12-18 08:22:30,828 - FastTextService - ERROR - Evaluation failed: predict processes one line at a time (remove '\n')
+2024-12-18 08:22:30,831 - FastTextService - ERROR - Training failed: predict processes one line at a time (remove '\n')
