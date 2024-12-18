@@ -4,6 +4,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
+import re
 
 class ModelLogger:
     def __init__(self, log_dir="logs"):
@@ -35,30 +36,40 @@ class ModelLogger:
         """Log training parameters"""
         self.metrics['model_params'] = model_params
         self.logger.info(f"Training started with parameters: {json.dumps(model_params, indent=2)}")
+        self.save_metrics()
 
-    def log_epoch(self, epoch, loss, examples_seen):
-        """Log epoch metrics"""
-        self.metrics['train_loss'].append(loss)
-        self.logger.info(f"Epoch {epoch}: loss={loss:.4f}, examples={examples_seen}")
+    def parse_fasttext_progress(self, line: str):
+        """Parse FastText's progress output to extract loss"""
+        if "Progress" in line and "loss" in line:
+            match = re.search(r'avg\.loss:\s+([0-9.]+)', line)
+            if match:
+                loss = float(match.group(1))
+                self.metrics['train_loss'].append(loss)
+                self.save_metrics()
 
     def log_evaluation(self, metrics):
         """Log evaluation metrics"""
         self.metrics['eval_metrics'] = metrics
         self.logger.info(f"Evaluation metrics: {json.dumps(metrics, indent=2)}")
-
-    def plot_training_curves(self):
-        """Plot and save training curves"""
-        plt.figure(figsize=(10, 6))
-        plt.plot(self.metrics['train_loss'], label='Training Loss')
-        plt.title('Training Loss Curve')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.legend()
-        plt.grid(True)
-        plt.savefig(self.log_dir / 'training_curve.png')
-        plt.close()
+        self.save_metrics()
 
     def save_metrics(self):
         """Save all metrics to JSON"""
         with open(self.log_dir / 'metrics.json', 'w') as f:
             json.dump(self.metrics, f, indent=2)
+
+    def plot_training_curves(self):
+        """Plot and save training curves"""
+        if not self.metrics['train_loss']:
+            self.logger.warning("No loss data to plot")
+            return
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(self.metrics['train_loss'], label='Training Loss')
+        plt.title('Training Loss Curve')
+        plt.xlabel('Progress')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(self.log_dir / 'training_curve.png')
+        plt.close()

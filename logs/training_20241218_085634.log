@@ -1,0 +1,23 @@
+2024-12-18 08:56:36,155 - FastTextService - INFO - Training started with parameters: {
+  "lr": 0.5,
+  "epoch": 25,
+  "wordNgrams": 2,
+  "minCount": 1,
+  "loss": "softmax"
+}
+2024-12-18 08:56:36,156 - FastTextService - INFO - Loading positive examples from data/train/positive
+2024-12-18 08:56:39,601 - FastTextService - INFO - Loading negative examples from data/train/negative
+2024-12-18 08:56:43,054 - FastTextService - INFO - Total training examples: 40000
+2024-12-18 08:56:43,227 - FastTextService - INFO - Starting model training...
+2024-12-18 08:57:07,305 - FastTextService - INFO - Evaluating on 100 samples from each class
+2024-12-18 08:57:07,379 - FastTextService - INFO - Evaluation metrics: {
+  "accuracy": 1.0,
+  "avg_confidence": 0.9920932298898697,
+  "num_test_samples": 200,
+  "class_distribution": {
+    "positive": 100,
+    "negative": 100
+  }
+}
+2024-12-18 08:57:07,379 - FastTextService - WARNING - No loss data to plot
+2024-12-18 08:57:07,379 - FastTextService - INFO - Training completed. Model ID: 66a6fadc-b885-4a5f-a341-abe55af8f02b

@@ -20,3 +20,47 @@
   }
 }
 2024-12-18 08:40:52,896 - FastTextService - INFO - Training completed. Model ID: f51a5493-01fc-4719-ac7d-e120770aad44
+2024-12-18 08:41:08,561 - FastTextService - INFO - Training started with parameters: {
+  "lr": 0.5,
+  "epoch": 25,
+  "wordNgrams": 2,
+  "minCount": 1,
+  "loss": "softmax"
+}
+2024-12-18 08:41:08,561 - FastTextService - INFO - Loading positive examples from data/train/positive
+2024-12-18 08:41:12,085 - FastTextService - INFO - Loading negative examples from data/train/negative
+2024-12-18 08:41:15,560 - FastTextService - INFO - Total training examples: 40000
+2024-12-18 08:41:15,726 - FastTextService - INFO - Starting model training...
+2024-12-18 08:41:40,185 - FastTextService - INFO - Evaluating on 100 samples from each class
+2024-12-18 08:41:40,284 - FastTextService - INFO - Evaluation metrics: {
+  "accuracy": 1.0,
+  "avg_confidence": 0.9920494502782822,
+  "num_test_samples": 200,
+  "class_distribution": {
+    "positive": 100,
+    "negative": 100
+  }
+}
+2024-12-18 08:41:40,392 - FastTextService - INFO - Training completed. Model ID: aab02b33-b22d-49e6-87f1-ed244fc16486
+2024-12-18 08:44:42,523 - FastTextService - INFO - Training started with parameters: {
+  "lr": 0.5,
+  "epoch": 25,
+  "wordNgrams": 2,
+  "minCount": 1,
+  "loss": "softmax"
+}
+2024-12-18 08:44:42,524 - FastTextService - INFO - Loading positive examples from data/train/positive
+2024-12-18 08:44:46,336 - FastTextService - INFO - Loading negative examples from data/train/negative
+2024-12-18 08:44:50,205 - FastTextService - INFO - Total training examples: 40000
+2024-12-18 08:44:50,399 - FastTextService - INFO - Starting model training...
+2024-12-18 08:45:16,529 - FastTextService - INFO - Evaluating on 100 samples from each class
+2024-12-18 08:45:16,623 - FastTextService - INFO - Evaluation metrics: {
+  "accuracy": 1.0,
+  "avg_confidence": 0.9927261075377465,
+  "num_test_samples": 200,
+  "class_distribution": {
+    "positive": 100,
+    "negative": 100
+  }
+}
+2024-12-18 08:45:16,727 - FastTextService - INFO - Training completed. Model ID: 5828dc59-9e3f-402f-bc38-5339284584cd

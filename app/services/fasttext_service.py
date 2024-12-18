@@ -5,6 +5,8 @@ import uuid
 import fasttext
 import types
 import tempfile
+import sys
+from io import StringIO
 from ..utils.logger import ModelLogger  # Import our logger
 
 def clean_text(text: str) -> str:
@@ -38,6 +40,8 @@ def _patched_predict(self, text, k=1, threshold=0.0, on_unicode_error='strict'):
 
 # Apply the patch to FastText
 fasttext.FastText._FastText.predict = _patched_predict
+
+
 
 class FastTextService:
     def __init__(self):
@@ -85,6 +89,9 @@ class FastTextService:
                 training_file = f.name
 
             try:
+                  # Capture stdout to parse progress
+                old_stdout = sys.stdout
+                sys.stdout = mystdout = StringIO()
                 # Train model and log progress
                 self.logger.logger.info("Starting model training...")
                 model = fasttext.train_supervised(
@@ -94,8 +101,14 @@ class FastTextService:
                     wordNgrams=model_params['wordNgrams'],
                     minCount=model_params['minCount'],
                     loss=model_params['loss'],
-                    verbose=2  # Enable verbose output
+                    verbose=2,  # Enable verbose output # Add callback
                 )
+                                # Restore stdout and parse output
+                sys.stdout = old_stdout
+                output = mystdout.getvalue()
+                for line in output.split('\n'):
+                    self.logger.parse_fasttext_progress(line)
+
 
                 # Generate UUID and save model
                 model_id = str(uuid.uuid4())
@@ -107,8 +120,9 @@ class FastTextService:
                 eval_metrics = self._evaluate_model(model)
                 self.logger.log_evaluation(eval_metrics)
                 
-                # Save training curves
+                # Save training curves and metrics
                 self.logger.plot_training_curves()
+                self.logger.save_metrics()
                 
                 self.logger.logger.info(f"Training completed. Model ID: {model_id}")
                 return model_id

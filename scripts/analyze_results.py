@@ -1,77 +1,75 @@
-from pathlib import Path
+import logging
 import json
+from pathlib import Path
 import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
+import numpy as np
+from datetime import datetime
+import re
 
-def analyze_training_results():
-    """Analyze and visualize the latest training results"""
-    # Find latest log file
-    log_dir = Path("logs")
-    metrics_file = max(log_dir.glob("metrics*.json"), key=lambda x: x.stat().st_mtime)
-    
-    with open(metrics_file) as f:
-        metrics = json.load(f)
-    
-    # Create output directory for plots
-    plots_dir = log_dir / "plots"
-    plots_dir.mkdir(exist_ok=True)
-    
-    # 1. Training Configuration
-    print("Training Configuration:")
-    print(json.dumps(metrics['model_params'], indent=2))
-    
-    # 2. Model Performance
-    print("\nModel Performance:")
-    print(json.dumps(metrics['eval_metrics'], indent=2))
-    
-    # 3. Create visualizations
-    plt.style.use('seaborn')
-    
-    # Loss curve
-    plt.figure(figsize=(10, 6))
-    plt.plot(metrics['train_loss'], marker='o')
-    plt.title('Training Loss Over Time')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.grid(True)
-    plt.savefig(plots_dir / 'loss_curve.png')
-    plt.close()
-    
-    # Class distribution
-    class_dist = metrics['eval_metrics']['class_distribution']
-    plt.figure(figsize=(8, 6))
-    plt.bar(class_dist.keys(), class_dist.values())
-    plt.title('Test Set Class Distribution')
-    plt.xlabel('Class')
-    plt.ylabel('Count')
-    plt.savefig(plots_dir / 'class_distribution.png')
-    plt.close()
-    
-    # Create summary report
-    report = f"""
-    Training Summary Report
-    ----------------------
-    
-    Model Configuration:
-    - Learning Rate: {metrics['model_params']['lr']}
-    - Epochs: {metrics['model_params']['epoch']}
-    - Word N-grams: {metrics['model_params']['wordNgrams']}
-    
-    Performance Metrics:
-    - Accuracy: {metrics['eval_metrics']['accuracy']:.4f}
-    - Average Confidence: {metrics['eval_metrics']['avg_confidence']:.4f}
-    - Test Samples: {metrics['eval_metrics']['num_test_samples']}
-    
-    Class Distribution:
-    - Positive: {class_dist['positive']}
-    - Negative: {class_dist['negative']}
-    """
-    
-    with open(plots_dir / 'summary_report.txt', 'w') as f:
-        f.write(report)
-    
-    print("\nAnalysis completed! Check the 'logs/plots' directory for visualizations.")
+class ModelLogger:
+    def __init__(self, log_dir="logs"):
+        self.log_dir = Path(log_dir)
+        self.log_dir.mkdir(exist_ok=True)
+        
+        # Setup logging
+        self.logger = logging.getLogger("FastTextService")
+        self.logger.setLevel(logging.INFO)
+        
+        # Create handlers
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        fh = logging.FileHandler(self.log_dir / f"training_{timestamp}.log")
+        fh.setLevel(logging.INFO)
+        
+        # Create formatter
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        fh.setFormatter(formatter)
+        self.logger.addHandler(fh)
+        
+        # Metrics storage
+        self.metrics = {
+            'train_loss': [],
+            'eval_metrics': {},
+            'model_params': None
+        }
 
-if __name__ == "__main__":
-    analyze_training_results()
+    def log_training_start(self, model_params):
+        """Log training parameters"""
+        self.metrics['model_params'] = model_params
+        self.logger.info(f"Training started with parameters: {json.dumps(model_params, indent=2)}")
+        self.save_metrics()
+
+    def parse_fasttext_progress(self, line: str):
+        """Parse FastText's progress output to extract loss"""
+        if "Progress" in line and "loss" in line:
+            match = re.search(r'avg\.loss:\s+([0-9.]+)', line)
+            if match:
+                loss = float(match.group(1))
+                self.metrics['train_loss'].append(loss)
+                self.save_metrics()
+
+    def log_evaluation(self, metrics):
+        """Log evaluation metrics"""
+        self.metrics['eval_metrics'] = metrics
+        self.logger.info(f"Evaluation metrics: {json.dumps(metrics, indent=2)}")
+        self.save_metrics()
+
+    def save_metrics(self):
+        """Save all metrics to JSON"""
+        with open(self.log_dir / 'metrics.json', 'w') as f:
+            json.dump(self.metrics, f, indent=2)
+
+    def plot_training_curves(self):
+        """Plot and save training curves"""
+        if not self.metrics['train_loss']:
+            self.logger.warning("No loss data to plot")
+            return
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(self.metrics['train_loss'], label='Training Loss')
+        plt.title('Training Loss Curve')
+        plt.xlabel('Progress')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(self.log_dir / 'training_curve.png')
+        plt.close()
