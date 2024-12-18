@@ -8,8 +8,11 @@ import tempfile
 from ..utils.logger import ModelLogger  # Import our logger
 
 def clean_text(text: str) -> str:
-    """Clean text by removing extra whitespace and newlines"""
-    return ' '.join(text.strip().split())
+    """Clean text by removing extra whitespace, newlines, and normalizing spaces"""
+    # Remove any special characters that might cause issues
+    text = text.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
+    # Normalize whitespace and strip
+    return ' '.join(text.split()).strip()
 
 # Patch FastText to fix numpy issue
 def _patched_predict(self, text, k=1, threshold=0.0, on_unicode_error='strict'):
@@ -187,10 +190,9 @@ class FastTextService:
             model = self.models[model_id]
             scores = []
             for doc in documents:
-                # Clean the document text
-                doc = ' '.join(doc.split())  # normalize whitespace
-                doc += "\n"  # Add required newline for FastText
-                labels, probs = model.predict(doc)
+                # Clean the document tex
+                cleaned_doc = clean_text(doc)
+                labels, probs = model.predict(cleaned_doc)
                 # Get probability for positive class
                 score = float(probs[0]) if labels[0] == '__label__positive' else (1.0 - float(probs[0]))
                 scores.append(score)

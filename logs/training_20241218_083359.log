@@ -9,3 +9,14 @@
 2024-12-18 08:36:06,794 - FastTextService - INFO - Loading negative examples from data/train/negative
 2024-12-18 08:36:10,407 - FastTextService - INFO - Total training examples: 40000
 2024-12-18 08:36:10,592 - FastTextService - INFO - Starting model training...
+2024-12-18 08:36:34,926 - FastTextService - INFO - Evaluating on 100 samples from each class
+2024-12-18 08:36:35,002 - FastTextService - INFO - Evaluation metrics: {
+  "accuracy": 1.0,
+  "avg_confidence": 0.9931583797931671,
+  "num_test_samples": 200,
+  "class_distribution": {
+    "positive": 100,
+    "negative": 100
+  }
+}
+2024-12-18 08:36:36,022 - FastTextService - INFO - Training completed. Model ID: e6a8b11c-a62d-4fb9-a37b-aceda98f57d9
