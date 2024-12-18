@@ -92,8 +92,6 @@ class FastTextService:
             num_positive = len(train_data)
             self.logger.logger.info(f"Collected {num_positive} positive examples")
             
-            if num_positive < 20000:
-                raise ValueError(f"Insufficient positive examples. Found {num_positive}, need at least 20000")
                 
             # Load negative examples
             negative_dir = "data/train/negative"
